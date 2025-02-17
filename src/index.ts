@@ -28,7 +28,7 @@ app.put('/spreadsheet/update', async (req: Request<{},{},Question>, res:Response
         await putValuesREST(spreadsheetId, range, newValues);
 
     } catch (error){
-        res.status(500).json({ error: 'Failed to update spreadsheet data' });
+        res.status(500).json({ error: 'Failed to update some of the spreadsheet data' });
     }
 
 });
