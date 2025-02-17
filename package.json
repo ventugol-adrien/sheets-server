@@ -4,19 +4,21 @@
   "description": "returns google sheets API data",
   "license": "ISC",
   "author": "adrien.ventugol",
-  "type": "commonjs",
+  "type": "module",
   "main": "index.js",
   "scripts": {
     "test": "test",
-    "compile": "tsc src/server.ts || true && node fix-imports.js",
-    "start": "npm run compile && node src/server.js"
+    "compile": "tsc src/index.ts --esModuleInterop true --target es2017 --moduleResolution node && node fix-imports.js",
+    "deploy": "npm run compile && gcloud run deploy sheets-server --source .",
+    "start": "node src/index.js"
   },
   "dependencies": {
     "cors": "^2.8.5",
     "dotenv": "^16.4.7",
     "express": "^4.21.2",
     "google-auth-library": "^9.15.1",
-    "googleapis": "^144.0.0"
+    "googleapis": "^144.0.0",
+    "typescript": "^5.7.3"
   },
   "devDependencies": {
     "@types/cors": "^2.8.17",
