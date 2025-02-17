@@ -29,6 +29,7 @@ export async function getValuesREST(spreadsheetId:string, range:string) {
     if (!process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL || !process.env.GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY) {
       throw new Error('Missing environment variables for Google service account');
     } else {
+      console.log("Credentials found!");
       const auth = new JWT({
         email: process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL,
         key: process.env.GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY?.replace(/\\n/g, '\n'),

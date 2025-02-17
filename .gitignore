@@ -2,3 +2,6 @@
 node_modules
 dist
 .vscode/settings.json
+src/index.js
+src/types.js
+src/services/getSheets.js
