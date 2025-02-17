@@ -1,6 +1,10 @@
 // filepath: fix-imports.js
-const fs = require('fs');
-const path = require('path');
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
+import { dirname } from 'path';
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
 function fixImports(filePath) {
   fs.readFile(filePath, 'utf8', (err, data) => {
@@ -8,7 +12,6 @@ function fixImports(filePath) {
       console.error(`Error reading file: ${filePath}`, err);
       return;
     }
-
     const updatedData = data.replace(/\.default/g, '');
 
     fs.writeFile(filePath, updatedData, 'utf8', (err) => {
@@ -21,5 +24,20 @@ function fixImports(filePath) {
   });
 }
 
-const jsFilePath = path.join(__dirname, 'src', 'server.js'); // Adjust path if necessary
+
+function appendJsExtension(filePath) {
+  try{
+    const data = fs.readFileSync(filePath, 'utf8');
+    const updatedData = data.replace('./services/getSheets', './services/getSheets.js');
+    fs.writeFileSync(filePath, updatedData, 'utf8');
+    console.log(`Appended .js extension to: ${filePath}`);
+  } catch (err) {
+    console.error(`Error appending .js extension to: ${filePath}`, err);
+  }
+  
+}
+
+const jsFilePath = path.join(__dirname, 'src', 'index.js'); // Adjust path if necessary
+
 fixImports(jsFilePath);
+appendJsExtension(jsFilePath);
