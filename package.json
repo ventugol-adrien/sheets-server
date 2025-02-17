@@ -8,7 +8,8 @@
   "main": "index.js",
   "scripts": {
     "test": "test",
-    "start": "node src/server.js"
+    "compile": "tsc src/server.ts || true && node fix-imports.js",
+    "start": "npm run compile && node src/server.js"
   },
   "dependencies": {
     "cors": "^2.8.5",
