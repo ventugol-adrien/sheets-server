@@ -9,7 +9,7 @@
   "scripts": {
     "test": "test",
     "compile": "tsc src/index.ts --esModuleInterop true --target es2017 --moduleResolution node && node fix-imports.js",
-    "deploy": "gcloud run deploy sheets-server --source .",
+    "deploy": "gcloud config configurations activate sheets-server && gcloud run deploy sheets-server --source .",
     "start": "node src/index.js"
   },
   "dependencies": {
