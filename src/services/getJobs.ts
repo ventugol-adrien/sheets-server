@@ -3,7 +3,7 @@ import { Job } from "../types"
 const openAI = "3c7a8979-a7b6-492f-a636-825e203663c1"
 
 export const openAIJob = ():Job => {
-    return { company: 'OpenAI', title: 'Forward Deployed Software Engineer', 
+    return { company: 'OpenAI', title: 'Forward Deployed Software Engineer',link:`https://www.linkedin.com/jobs/view/4150387419`, 
         description: "About The Role/n/n"
         + "We are looking for customer-focused engineers to build effective, iterative solutions on OpenAI’s API."
         + " As an FDE, you’ll embed with customers, understand their domain, and co-develop solutions"

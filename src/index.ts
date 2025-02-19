@@ -31,12 +31,12 @@ app.get('/spreadsheet/range', async (req: Request<{},{},Question>, res:Response)
     }
   });
 
-app.put('/spreadsheet/update/', async (req: Request<{},{},Question>, res:Response) => {
+app.put('/spreadsheet/update/:asker', async (req: Request<{asker:string},{},Question>, res:Response) => {
     try {
-        const job = getJob(req.body.asker) as Job | null;
+        const job = getJob(req.params.asker) as Job | null;
         const spreadsheetId = "122LIKJ4G8KSomRhotHoRuOGK5ep0-V5tm0OEoM5Kv9w";
         const range = "Qs";
-        const newValues = [[req.body.question, req.body.time, req.body.theme, req.body.asker || '', job ? job.company : '', job ? job.description : '']];
+        const newValues = [[req.body.question, req.body.time, req.body.theme, req.body.asker ?? '', job?.company ?? '', job?.link ?? '', job?.description ?? '']];
         await putValuesREST(spreadsheetId, range, newValues);
 
     } catch (error){

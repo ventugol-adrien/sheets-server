@@ -27,12 +27,13 @@ app.get('/job', (req, res) => {
         res.status(500).json({ error: 'Failed to fetch spreadsheet data' });
     }
 });
-app.put('/spreadsheet/update/', async (req, res) => {
+app.put('/spreadsheet/update/:asker', async (req, res) => {
+    var _a, _b, _c, _d;
     try {
-        const job = getJob(req.body.asker);
+        const job = getJob(req.params.asker);
         const spreadsheetId = "122LIKJ4G8KSomRhotHoRuOGK5ep0-V5tm0OEoM5Kv9w";
         const range = "Qs";
-        const newValues = [[req.body.question, req.body.time, req.body.theme, req.body.asker || '', job ? job.company : '', job ? job.description : '']];
+        const newValues = [[req.body.question, req.body.time, req.body.theme, (_a = req.body.asker) !== null && _a !== void 0 ? _a : '', (_b = job === null || job === void 0 ? void 0 : job.company) !== null && _b !== void 0 ? _b : '', (_c = job === null || job === void 0 ? void 0 : job.link) !== null && _c !== void 0 ? _c : '', (_d = job === null || job === void 0 ? void 0 : job.description) !== null && _d !== void 0 ? _d : '']];
         await putValuesREST(spreadsheetId, range, newValues);
     }
     catch (error) {
