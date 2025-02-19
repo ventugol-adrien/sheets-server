@@ -29,7 +29,8 @@ function appendJsExtension(filePath) {
   try{
     const data = fs.readFileSync(filePath, 'utf8');
     const updatedData = data.replace('./services/getSheets', './services/getSheets.js');
-    fs.writeFileSync(filePath, updatedData, 'utf8');
+    const fixedData = updatedData.replace('./services/getJobs', './services/getJobs.js');
+    fs.writeFileSync(filePath, fixedData, 'utf8');
     console.log(`Appended .js extension to: ${filePath}`);
   } catch (err) {
     console.error(`Error appending .js extension to: ${filePath}`, err);
