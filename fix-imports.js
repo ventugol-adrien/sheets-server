@@ -28,9 +28,8 @@ function fixImports(filePath) {
 function appendJsExtension(filePath) {
   try{
     const data = fs.readFileSync(filePath, 'utf8');
-    const updatedData = data.replace('./services/getSheets', './services/getSheets.js');
-    const fixedData = updatedData.replace('./services/getJobs', './services/getJobs.js');
-    fs.writeFileSync(filePath, fixedData, 'utf8');
+    const updatedData = data.replace('./services/getSheets', './services/getSheets.js').replace('./services/getJobs', './services/getJobs.js').replace("../assets/jobs","../assets/jobs.js");
+    fs.writeFileSync(filePath, updatedData, 'utf8');
     console.log(`Appended .js extension to: ${filePath}`);
   } catch (err) {
     console.error(`Error appending .js extension to: ${filePath}`, err);
@@ -38,7 +37,9 @@ function appendJsExtension(filePath) {
   
 }
 
-const jsFilePath = path.join(__dirname, 'src', 'index.js'); // Adjust path if necessary
+const indexPath = path.join(__dirname, 'src', 'index.js');
+const getJobsPath = path.join(__dirname, 'src','services', 'getJobs.js');
 
-fixImports(jsFilePath);
-appendJsExtension(jsFilePath);
+fixImports(indexPath);
+appendJsExtension(indexPath);
+appendJsExtension(getJobsPath);
