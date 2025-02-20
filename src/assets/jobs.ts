@@ -2,7 +2,7 @@ import { link } from "fs"
 import { Job } from "../types"
 
 export const openAIJob = ():Job => {
-    return { company: 'OpenAI', title: 'Forward Deployed Software Engineer',link:`https://www.linkedin.com/jobs/view/4150387419`, 
+    return { company: 'OpenAI',favicon:"https://openai.com/favicon.ico", title: 'Forward Deployed Software Engineer',link:`https://www.linkedin.com/jobs/view/4150387419`, 
         description: "About The Role/n/n"
         + "We are looking for customer-focused engineers to build effective, iterative solutions on OpenAI’s API."
         + " As an FDE, you’ll embed with customers, understand their domain, and co-develop solutions"
@@ -33,7 +33,7 @@ export const openAIJob = ():Job => {
 }
 
 export const dennemeyerJob = ():Job => {
-    return {company:"Dennemeyer", title: "Full-Stack Developer",link:`https://www.linkedin.com/jobs/view/4106713895`, description:`About the job
+    return {company:"Dennemeyer",favicon:"https://www.dennemeyer.com/_assets/9b80d86a98af3ecc38aabe297d2c3695/Icons/favicon.ico", title: "Full-Stack Developer",link:`https://www.linkedin.com/jobs/view/4106713895`, description:`About the job
 Team spirit and initiative are your most prominent strengths, and you are motivated to develop a long-term career in Intellectual Property, in a multicultural work environment? Apply now!
 
 Your Responsibilities
@@ -101,4 +101,6 @@ About us
 At FRANKA ROBOTICS - we build robots with ethics, which comes with great responsibility, creating state-of-the-art award-winning technology made to improve human lives and change our world for the better. Every day is filled with hard and exciting work, and the ability to take game-changing decisions from day one. We seek a hands-on mindset of those who strive for results, but enjoy the process of getting there.
 
 Franka Robotics GmbH, formerly known as Franka Emika, is a fully owned subsidiary of Agile Robots SE. Agile Robots SE is an international high-tech company based in Munich (GER) with a production site in Kaufbeuren and more than 1900 employees worldwide.`}
-} 
+}
+
+export const shapeInJob = ():Job => {return {company:"SHAPEiN", title:"Software Engineer",favicon:"https://shapein.com/application/files/3917/2891/6746/shapein-logo.svg", description: "Integrate Workday Data into SAP platforms, participate in innovation, and use Built on Workday to provide new functionalities."}}

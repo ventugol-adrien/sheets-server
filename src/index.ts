@@ -31,6 +31,16 @@ app.get('/spreadsheet/range', async (req: Request<{},{},Question>, res:Response)
     }
   });
 
+  app.get('/company', (req: Request<{},{},{},{id:string}>, res:Response) => {
+    try {
+      const job = getJob(req.query.id) as Job
+      const data = { company: job.company, favicon: job.favicon }
+      res.json(data);
+    } catch (error) {
+      res.status(500).json({ error: 'Failed to fetch spreadsheet data' });
+    }
+  });
+
 app.put('/spreadsheet/update/:asker', async (req: Request<{asker:string},{},Question>, res:Response) => {
     try {
         const job = getJob(req.params.asker) as Job | null;

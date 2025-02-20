@@ -10,4 +10,5 @@ export interface Job {
     title: string,
     description: string,
     link?:string,
+    favicon?:string
 }

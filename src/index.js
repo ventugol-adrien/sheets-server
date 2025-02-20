@@ -27,6 +27,16 @@ app.get('/job', (req, res) => {
         res.status(500).json({ error: 'Failed to fetch spreadsheet data' });
     }
 });
+app.get('/company', (req, res) => {
+    try {
+        const job = getJob(req.query.id);
+        const data = { company: job.company, favicon: job.favicon };
+        res.json(data);
+    }
+    catch (error) {
+        res.status(500).json({ error: 'Failed to fetch spreadsheet data' });
+    }
+});
 app.put('/spreadsheet/update/:asker', async (req, res) => {
     var _a, _b, _c, _d;
     try {
