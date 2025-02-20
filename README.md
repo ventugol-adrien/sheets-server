@@ -16,7 +16,6 @@ This project provides a server that retrieves and updates data in Google Sheets 
 *   **gcloud CLI:** Google Cloud command-line interface for deployment
 
 ## Project Structure
-
 sheets-server/
 ├── .git/               # Git repository
 ├── .github/            # GitHub configuration (e.g., workflows)
