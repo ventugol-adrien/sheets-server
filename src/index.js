@@ -47,10 +47,10 @@ app.get('/company', (req, res) => {
 app.put('/spreadsheet/update/:asker', async (req, res) => {
     try {
         getJob(req.params.asker).then((job) => {
-            var _a, _b, _c, _d;
+            var _a, _b, _c, _d, _e;
             const range = "Qs";
             const newValues = [[req.body.question, req.body.time, req.body.theme, (_a = req.body.asker) !== null && _a !== void 0 ? _a : '', (_b = job === null || job === void 0 ? void 0 : job.company) !== null && _b !== void 0 ? _b : '', (_c = job === null || job === void 0 ? void 0 : job.link) !== null && _c !== void 0 ? _c : '', (_d = job === null || job === void 0 ? void 0 : job.description) !== null && _d !== void 0 ? _d : '']];
-            putValuesREST(process.env.SHEET_ID, range, newValues);
+            putValuesREST((_e = process.env.SHEET_ID) !== null && _e !== void 0 ? _e : "", range, newValues);
         });
     }
     catch (error) {

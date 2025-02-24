@@ -52,7 +52,7 @@ app.put('/spreadsheet/update/:asker', async (req: Request<{asker:string},{},Ques
         getJob(req.params.asker).then((job)=>{
           const range = "Qs";
           const newValues = [[req.body.question, req.body.time, req.body.theme, req.body.asker ?? '', job?.company ?? '', job?.link ?? '', job?.description ?? '']];
-          putValuesREST(process.env.SHEET_ID, range, newValues);
+          putValuesREST(process.env.SHEET_ID ?? "", range, newValues);
         })
 
     } catch (error){
