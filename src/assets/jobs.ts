@@ -287,3 +287,71 @@ Put Effort into Diversity
 Diverse teams drive innovation and better outcomes. Having seen my mother and partner build their careers as minority women in non-diverse fields, I want to make sure Ashby creates opportunities for the next generation of engineers from underrepresented groups.
 
 Today, 26% of engineers at Ashby are from underrepresented groups. It’s not great, and we are taking conscious steps to improve, like sourcing diverse candidates, providing generous paid family leave, no leetcode interviews, and more.`}}
+
+
+export const understandRecruitmentJob = ():Job => {return {company:"Understanding Recruitment", title: "Full Stack Engineer", link: "https://www.linkedin.com/jobs/view/4124894192", favicon: "https://sitescdn.wearevennture.co.uk/public/understanding-recruitment/assets/favicon-16x16.png", description:`The company is a leading AI audio research and deployment company creating innovative, context-aware speech and sound models for diverse applications, including content creation, entertainment, accessibility, and professional training. They are looking for an experienced Full Stack Engineer to join their team, managing the development and building of products from scratch.
+
+
+
+🔑 Key Requirements:
+
+Technical Expertise: 2+ years of experience with React, TypeScript, and Python.
+Product Engineering Focus: Experience in building customer-facing products from the ground up, including developing prototypes.
+Customer Interaction: Ability to engage with customers directly to understand their needs and incorporate feedback into product development.
+
+
+💼 What You’ll Do:
+
+Design and build prototypes, gather customer feedback, and iterate to refine and improve the product.
+Utilise your expertise in React, TypeScript, and Python to build products from scratch.
+`}}
+
+export const everstoxJob = ():Job => { return {company: "everstox", title: "AI Software Engineer", link: "https://www.linkedin.com/jobs/view/4162446157", favicon:"https://images.teamtailor-cdn.com/images/s3/teamtailor-production/favicon-v3/image_uploads/03698936-b498-4a22-b2eb-e6923abde6a0/original.png", description:`Your Days Will Be Filled With
+
+You develop, experiment with, and refine AI-driven solutions to optimize logistics using our vast dataset of millions of data points.
+You leverage everstox’ five years worth of collected learnings, best practices, and data to create AI-driven optimizations that move logistics to the next level.
+You build and test rapid AI prototypes to validate feasibility and impact.
+You work hands-on with LLMs, NLP, and AI automation to build intelligent, scalable solutions.
+You independently explore business and product needs, aligning AI solutions to real-world use cases.
+You collaborate with product, sales, and engineering teams to refine insights and functionalities.
+You integrate AI capabilities into our existing tech stack (Python, Flask, PostgreSQL, AWS).
+You research the latest AI advancements and propose innovative solutions.
+
+You Are Special And You Bring
+
+You have a strong curiosity for AI, LLMs, and automation.
+You have experience working with AI/ML models, NLP, or automation tools.
+You are eager to experiment and thrive in a fast-paced, iterative environment.
+You are highly self-driven and independent, comfortable working without a predefined structure.
+You bring some experience in Python & working with SQL Databases
+You have strong communication skills and the ability to align AI initiatives with business and product needs.
+You are fluent in English (speaking & writing skills). German would be a bonus.
+Bonus: Experience with LangChain, OpenAI API, Hugging Face, AWS AI tools.
+
+Why Dive Into Our World
+
+AI-Powered Innovation: Work on cutting-edge AI solutions that redefine logistics.
+Remote Flexibility: Work from anywhere—your productivity, your way.
+No Micromanagement: Take ownership and responsibility for your projects.
+Modern Equipment: Choose the laptop & tools you need for success.
+Great Workspace: A modern office in Munich (Schwanthalerhöhe) if you prefer working on-site.
+Awesome Perks: From job bikes to Wellpass perks, we've got plenty to offer.
+Collaborative Culture: Work with a founding team that treats every team member as an equal.`}}
+
+export const konuxJob = ():Job => {return {company:"Konux", title: "Senior Full Stack Developer", link: "https://www.linkedin.com/jobs/view/4152192792", favicon:"https://www.konux.com/favicons/favicon-32x32.png", description:`Transform Railway Operations for a Sustainable Future
+KONUX is a dynamic and fast-growing technology company that is transforming the way the railway industry works. Our AI-powered solutions empower our customers to make smarter, data-driven decisions, and our culture is fueled by grit, ingenuity, and credibility - we believe that these values are essential to unlocking the potential of technology and making a real impact. At KONUX, we are passionate about driving innovation in the fields of IoT and AI, and we are looking for like-minded individuals to join our team.
+
+Job Description:
+We are seeking a Senior Full-Stack Developer (m/f/x) to join our team of engineers. In this role, you will be at the forefront of developing solutions to improve railway operations that haven’t been solved so far. You will work alongside a team of experts who are committed to pushing the boundaries of what's possible and driving innovation forward. If you're a go-getter who's not afraid to think outside the box, we want to hear from you. You'll be a key driver of our culture, helping to ensure that our values are embedded in everything we do.
+
+Your Impact
+You’ll work as a software developer in a cross-functional team (consisting of UX, data scientists, data engineers, as well as frontend and backend engineers) focussed on developing and enhancing features for our switch monitoring product
+You will take the technical leadership for projects in your team, actively collaborating with Product Managers, analyzing requirements, and aligning technical dependencies across teams.
+Together with other Frontend and Backend Engineers you will define and promote common technical standards across all teams.
+To be successful in this role, you’ll need to have
+5+ years of experience building frontends in a modern framework. Experience with React + TypeScript is beneficial.
+3+ years of experience developing backend functionality within a cloud environment, preferably AWS (Lambdas, Dynamo DB, API Gateway, EventBridge…), using Docker and Kubernetes. Experience with Python and/or Java is a plus.
+Ideally, you already have experience working with data pipelines and multiple database technologies.
+As a generalist, you’re eager to continuously learn and open to switching between technical domains like Backend, Frontend, infrastructure, or Data Engineering.
+You enjoy working in a close team setup and being an active communicator. 
+You like to get things done and support the team with your execution-oriented approach`}}
