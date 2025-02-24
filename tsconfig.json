@@ -2,10 +2,7 @@
     "compilerOptions": {
         "target": "ESNext",
         "module": "NodeNext",
-        "esModuleInterop": true,
         "moduleResolution": "nodenext",
-        "moduleDetection": "auto",
-        "strict": true,
         "outDir": "./dist"
     },
     "include": ["src/**/*.ts"],
