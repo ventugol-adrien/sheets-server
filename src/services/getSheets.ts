@@ -1,7 +1,6 @@
 import { google } from "googleapis";
 import { JWT } from 'google-auth-library';
 import { configDotenv } from 'dotenv';
-
 configDotenv();
 
 export async function getValuesREST(spreadsheetId:string, range:string) { 
