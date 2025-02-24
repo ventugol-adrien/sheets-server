@@ -203,6 +203,28 @@ export const personioJob_2 = () => {
     
     Ignite Positive Momentum: We embrace the challenge with a positive mindset and celebrate our wins together.` };
 };
+export const goldingJob = () => {
+    return {
+        company: 'Golding Capital',
+        title: 'Senior Full-stack Developer',
+        link: 'https://www.linkedin.com/jobs/view/4157199282',
+        favicon: 'https://www.goldingcapital.com/themes/master_theme/favicon.ico',
+        description: `As Golding sets its sights on growth, we are seeking a Senior Full Stack Developer (m/f/d) to bolster our committed 
+      IT Team at our Munich location at the earliest opportunity.Your responsibilityDesign, develop, and maintain web applications using Vue.js and Node.js to create exceptional user experiences.Collaborate with cross-functional teams to gather and define the requirements of web applications, ensuring they meet the highest standards of quality and functionality.Migrate legacy applications to Vue.js 
+      and Node.js while ensuring data integrity.Optimize application performance, usability, and robustness to deliver seamless and reliable applications to our users.Write secure, clean, efficient, testable, and maintainable code, contributing to the long-term success 
+      of our projects.Create outstanding documentation that ensures the transparency, accessibility and sustainability of our work.Your qualificationDegree in computer science, a related field or completed vocational training as an IT specialist.Proven experience as a Full Stack Developer specializing in Vue.js and Node.js, with a minimum of 5 years of hands-on experience in the fieldStrong knowledge of JavaScript, HTML, and CSS to bring our ideas to life in the digital realm.Proficient understanding of integration patterns such as REST API or events.Familiarity with other programming languages, such as .NET, PHP, is an advantage, broadening your toolkit and perspective as well as enabling you to efficiently support the transition to the target technology stack.Experience with CI/CD pipelines including documentation-as-code, is an advantage, streamlining our development/documentation processes and enhancing our deployment strategies.Excellent problem-solving and analytical skills.Experience with working in agile development environment.Professional level of English; basic knowledge of German is an advantage for effective communication.Commitment to the highest standards of quality and results, with a strong focus on delivering exceptional outcomes.Proven ability to take ownership of your actions and responsibilities, demonstrating reliability and accountability in your work.About usGolding Capital Partners, with a team of over 200 experts and managed assets exceeding 14.5 billion euros, is one of the esteemed specialists in alternative investments. Our tailored investment strategies – with an increasing focus on sustainable investments – ensure high quality and diversification of our investments.We have established ourselves as a trusted partner for institutional investors such as insurance companies, pension funds, foundations, family offices, religious institutions, and banks, who seek long-term attractive investments in the areas of private equity, 
+      private credit, infrastructure, secondaries, and impact, and who share our commitment to sustainability and social responsibility.Our values unite the people at Golding. We foster a community where everyone feels a sense of belonging and value diverse perspectives. The dynamic work environment at Golding has been recognized as excellent: awarded the "Top Company Award" by kununu three times in a row since 2022, and named "Most Wanted Employer" by ZEIT in 2024.If you can identify with our corporate philosophy and profile, seize the opportunity and let us keep writing the success story of Golding Capital Partners together!`
+    };
+};
+export const allJobs = [
+    Object.assign({ id: "3c7a8979-a7b6-492f-a636-825e203663c1" }, openAIJob()),
+    Object.assign({ id: "7c01ff39-ed7a-4b4e-9c1f-54c13efa20ce" }, dennemeyerJob()),
+    Object.assign({ id: "1c12803e-4353-4359-b4ff-f1ddb69e8e07" }, frankaRoboticsJob()),
+    Object.assign({ id: "a35383f2-241d-4b13-9b2d-3af43550c45f" }, shapeInJob()),
+    Object.assign({ id: "b12fe041-3f7f-4f43-8006-c945a0a467ff" }, personioJob_1()),
+    Object.assign({ id: "496559b5-a164-43cb-8d48-71963400ff68" }, personioJob_2()),
+    Object.assign({ id: "a303d966-817e-4b46-bc07-a7317de46b62" }, goldingJob()),
+];
 export const ashbyJob = () => {
     return { company: "Ashby", title: "Software Engineer - Product", link: "https://www.linkedin.com/jobs/view/4150539408", favicon: "https://www.ashbyhq.com/favicon.png", description: `We’re looking for an ambitious full-stack engineer who is laser-focused on solving customer problems and making the right long-term investments to solve them not only today but in our future features and products.
 

@@ -41,5 +41,3 @@ const indexPath = path.join(__dirname, 'src', 'index.js');
 const getJobsPath = path.join(__dirname, 'src','services', 'getJobs.js');
 
 fixImports(indexPath);
-appendJsExtension(indexPath);
-appendJsExtension(getJobsPath);

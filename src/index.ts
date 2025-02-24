@@ -1,9 +1,10 @@
 import express, {Request,Response} from 'express';
-import { getValuesREST, putValuesREST } from './services/getSheets';
+import { getValuesREST, putValuesREST } from './services/getSheets.js';
 import cors from 'cors';
-import { Job, Question } from './types';
-import { getJob } from './services/getJobs';
-
+import { Question } from './types.js';
+import { getJob } from './services/getJobs.js';
+import { configDotenv } from 'dotenv';
+configDotenv();
 const app = express();
 const port = 8080;
 
@@ -24,8 +25,12 @@ app.get('/spreadsheet/range', async (req: Request<{},{},Question>, res:Response)
   app.get('/job', (req: Request<{},{},{},{id:string}>, res:Response) => {
     console.log("request for job received with id", req.query.id)
     try {
-      const data = getJob(req.query.id);
-      res.json(data);
+      if (req.query.id) {
+        getJob(req.query.id).then((job)=>{
+          console.log(job)
+          res.json(job);
+        })
+      } 
     } catch (error) {
       res.status(500).json({ error: 'Failed to fetch spreadsheet data' });
     }
@@ -33,9 +38,10 @@ app.get('/spreadsheet/range', async (req: Request<{},{},Question>, res:Response)
 
   app.get('/company', (req: Request<{},{},{},{id:string}>, res:Response) => {
     try {
-      const job = getJob(req.query.id) as Job
-      const data = { company: job.company, favicon: job.favicon }
-      res.json(data);
+      getJob(req.query.id).then((job)=>{
+        const data = { company: job.company, favicon: job.favicon }
+        res.json(data);
+      })
     } catch (error) {
       res.status(500).json({ error: 'Failed to fetch spreadsheet data' });
     }
@@ -43,11 +49,11 @@ app.get('/spreadsheet/range', async (req: Request<{},{},Question>, res:Response)
 
 app.put('/spreadsheet/update/:asker', async (req: Request<{asker:string},{},Question>, res:Response) => {
     try {
-        const job = getJob(req.params.asker) as Job | null;
-        const spreadsheetId = "122LIKJ4G8KSomRhotHoRuOGK5ep0-V5tm0OEoM5Kv9w";
-        const range = "Qs";
-        const newValues = [[req.body.question, req.body.time, req.body.theme, req.body.asker ?? '', job?.company ?? '', job?.link ?? '', job?.description ?? '']];
-        await putValuesREST(spreadsheetId, range, newValues);
+        getJob(req.params.asker).then((job)=>{
+          const range = "Qs";
+          const newValues = [[req.body.question, req.body.time, req.body.theme, req.body.asker ?? '', job?.company ?? '', job?.link ?? '', job?.description ?? '']];
+          putValuesREST(process.env.SHEET_ID, range, newValues);
+        })
 
     } catch (error){
         res.status(500).json({ error: 'Failed to update some of the spreadsheet data' });
