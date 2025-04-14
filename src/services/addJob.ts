@@ -1,0 +1,161 @@
+import { z } from "zod";
+import mongo from "mongodb";
+import { v4 } from "uuid";
+import { configDotenv } from "dotenv";
+import {
+  GoogleGenerativeAI,
+  ResponseSchema,
+  SchemaType,
+} from "@google/generative-ai";
+import { getFavicon } from "./getJobs.js";
+configDotenv();
+
+export const PromptSchema = z.object({
+  question: z.string(),
+  default: z.string().optional(),
+});
+export type Prompt = z.infer<typeof PromptSchema>;
+
+const promptWindow = async (prompt: Prompt): Promise<string> => {
+  const response = await fetch(`${process.env.WEB_URL}/prompt`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(prompt),
+  });
+  return z.string().parse(await response.text());
+};
+
+export const jobSchema = z.object({
+  company: z.string().nullable().default(""),
+  title: z.string().nullable().default(""),
+  link: z.string().nullable().default(""),
+  favicon: z.string().nullable().default(""),
+  description: z.string().nullable().default(""),
+});
+export type Job = z.infer<typeof jobSchema>;
+
+const schema: ResponseSchema = {
+  description:
+    "Information about a specific job posting, comprised of company name, job title, favicon from website, and description.",
+  type: SchemaType.OBJECT,
+  properties: {
+    company: {
+      type: SchemaType.STRING,
+      description: "Name of the company posting the job.",
+      nullable: true,
+    },
+    title: {
+      type: SchemaType.STRING,
+      description: "Job title as extracted from the job posting",
+      nullable: true,
+    },
+    favicon: {
+      type: SchemaType.STRING,
+      description:
+        "Link to the favicon for the company's website, found in the head section of the html, in a link tag with attribute rel=icon most often.",
+      nullable: true,
+    },
+    description: {
+      type: SchemaType.STRING,
+      description:
+        "Job Description, including company description, job responsibilities, and required skills and experience. formatted in a human legible way.",
+      nullable: true,
+    },
+  },
+};
+
+export const prefillJob = async (job: string): Promise<Prompt[]> => {
+  if (process.env.GEMINI_API_KEY) {
+    const jobExtractor = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+    const model = jobExtractor.getGenerativeModel({
+      model: "gemini-2.0-flash",
+      systemInstruction:
+        "You are a text/ information extractor. Take the provided job posting and categorize faithfully and with extreme accuracy the data into the provided schema. Do not invent or create any data.",
+      generationConfig: {
+        responseMimeType: "application/json",
+        responseSchema: schema,
+        temperature: 0,
+      },
+    });
+    const myPrompt = `Here is a job posting: ${job}
+        Analyze it to extract the following information: Company name, job title (without extraneous indications like all genders or m/w/d), link to favicon or link to company website, and job description.`;
+    const response = await model.generateContent(myPrompt);
+    const extractedData = jobSchema.parse(JSON.parse(response.response.text()));
+    const foundFavicon = await getFavicon(extractedData.company);
+    const prompts: Prompt[] = [];
+    prompts.push({
+      question: "Enter Company name:",
+      default: extractedData.company,
+    });
+    prompts.push({
+      question: "Enter job title:",
+      default: extractedData.title,
+    });
+    prompts.push({
+      question: "Enter job link:",
+      default: "",
+    });
+    prompts.push({
+      question: "Enter favicon link:",
+      default: foundFavicon,
+    });
+    prompts.push({
+      question: "Enter job description:",
+      default: extractedData.description,
+    });
+    return prompts;
+  }
+};
+
+const jobId = z.intersection(z.string(), jobSchema);
+export type IdJob = z.infer<typeof jobId>;
+
+export const putJob = async (job: Job): Promise<string> => {
+  const uri = `mongodb+srv://admin:${process.env.MONGODB_PWD}@cluster0.akpza.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0`;
+  const client = new mongo.MongoClient(uri, {
+    serverApi: {
+      version: mongo.ServerApiVersion.v1,
+      strict: true,
+      deprecationErrors: true,
+    },
+  });
+  const [dbName, collectionName] = ["interactive-resume", "jobs"];
+  const database = client.db(dbName);
+  const collection = database.collection(collectionName);
+  const id = v4();
+  const jobWithId = jobId.parse({ ...job, id });
+  try {
+    return await client
+      .connect()
+      .then(async () => {
+        console.log("Connected to MongoDB to put new job", jobWithId);
+        return await collection
+          .insertOne(jobWithId)
+          .then((result) => {
+            console.log("Inserted new job", result);
+            const personalizedLink = `${process.env.WEB_URL}/${id}`;
+            console.log(
+              "New Job up and running at the following address:",
+              personalizedLink
+            );
+            return personalizedLink;
+          })
+          .catch((error) => {
+            console.error("Error inserting new job", error);
+            throw error;
+          });
+      })
+      .catch((error) => {
+        console.error("Error connecting to MongoDB", error);
+        throw error;
+      });
+  } catch (error) {
+    console.error("Error inserting new job.", error);
+    throw error;
+  } finally {
+    await client.close();
+    console.log("Closed MongoDB connection.");
+  }
+};
