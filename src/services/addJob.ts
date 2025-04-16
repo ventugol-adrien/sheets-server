@@ -8,6 +8,7 @@ import {
   SchemaType,
 } from "@google/generative-ai";
 import { getFavicon } from "./getJobs.js";
+import { putValuesREST } from "./getSheets.js";
 configDotenv();
 
 export const PromptSchema = z.object({
@@ -16,24 +17,22 @@ export const PromptSchema = z.object({
 });
 export type Prompt = z.infer<typeof PromptSchema>;
 
-const promptWindow = async (prompt: Prompt): Promise<string> => {
-  const response = await fetch(`${process.env.WEB_URL}/prompt`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(prompt),
-  });
-  return z.string().parse(await response.text());
-};
-
 export const jobSchema = z.object({
-  company: z.string().nullable().default(""),
-  title: z.string().nullable().default(""),
-  link: z.string().nullable().default(""),
+  company: z.string().default(""),
+  title: z.string().default(""),
+  link: z.string().default(""),
   favicon: z.string().nullable().default(""),
-  description: z.string().nullable().default(""),
+  description: z.string().default(""),
 });
+
+export const filledOutJob = z.object({
+  company: z.string().nonempty(),
+  title: z.string().nonempty(),
+  link: z.string().nonempty(),
+  favicon: z.string().nonempty(),
+  description: z.string().nonempty(),
+});
+export type FullJob = z.infer<typeof filledOutJob>;
 export type Job = z.infer<typeof jobSchema>;
 
 const schema: ResponseSchema = {
@@ -82,7 +81,12 @@ export const prefillJob = async (job: string): Promise<Prompt[]> => {
     const myPrompt = `Here is a job posting: ${job}
         Analyze it to extract the following information: Company name, job title (without extraneous indications like all genders or m/w/d), link to favicon or link to company website, and job description.`;
     const response = await model.generateContent(myPrompt);
+    console.log("Here is the response from Gemini", response.response.text());
     const extractedData = jobSchema.parse(JSON.parse(response.response.text()));
+    console.log(
+      "Successfully extracted the following data from the posting:",
+      extractedData
+    );
     const foundFavicon = await getFavicon(extractedData.company);
     const prompts: Prompt[] = [];
     prompts.push({
@@ -108,8 +112,7 @@ export const prefillJob = async (job: string): Promise<Prompt[]> => {
     return prompts;
   }
 };
-
-const jobId = z.intersection(z.string(), jobSchema);
+const jobId = jobSchema.extend({ id: z.string() });
 export type IdJob = z.infer<typeof jobId>;
 
 export const putJob = async (job: Job): Promise<string> => {
@@ -125,7 +128,8 @@ export const putJob = async (job: Job): Promise<string> => {
   const database = client.db(dbName);
   const collection = database.collection(collectionName);
   const id = v4();
-  const jobWithId = jobId.parse({ ...job, id });
+  console.log("here is the JobId", { id: id, ...job });
+  const jobWithId = jobId.parse({ id: id, ...job });
   try {
     return await client
       .connect()
