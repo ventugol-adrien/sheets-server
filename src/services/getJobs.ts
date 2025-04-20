@@ -32,7 +32,10 @@ export async function getJob(JobId: string): Promise<Job> {
   }
 }
 
-export async function getFavicon(company: string): Promise<string> {
+export async function getFavicon(
+  company: string,
+  domain?: string | undefined
+): Promise<string> {
   if (company === "") {
     console.log("No company name provided, returning empty string.");
     return "";
@@ -44,6 +47,12 @@ export async function getFavicon(company: string): Promise<string> {
     const findOneResult = await collection.findOne(findJobQuery);
     if (!findOneResult) {
       console.log("No job found for company:", company);
+      if (domain) {
+        console.log("Domain provided:", domain);
+        const link: string = `https://www.google.com/s2/favicons?domain=${domain}&sz=48`;
+        console.log("Here is the favicon we've found:", link);
+        return link;
+      }
       return "";
     } else {
       const job = jobSchema.parse(findOneResult);

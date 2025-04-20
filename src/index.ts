@@ -8,16 +8,13 @@ import { z } from "zod";
 import {
   filledOutJob,
   FullJob,
-  Job,
-  jobSchema,
   prefillJob,
   PromptSchema,
   putJob,
 } from "./services/addJob.js";
-import bodyParser from "body-parser";
 configDotenv();
 const app = express();
-const port = 8080;
+const port = process.env.PORT;
 enum Action {
   query = "query",
   update = "update",
@@ -44,6 +41,7 @@ app.use(
     ],
   })
 );
+console.log("Here is the current env:", process.env.NODE_ENV);
 app.use(express.json());
 
 app.get(

@@ -22,6 +22,7 @@ export const jobSchema = z.object({
   title: z.string().default(""),
   link: z.string().default(""),
   favicon: z.string().nullable().default(""),
+  domain: z.string().nullable().default(""),
   description: z.string().default(""),
 });
 
@@ -56,6 +57,11 @@ const schema: ResponseSchema = {
         "Link to the favicon for the company's website, found in the head section of the html, in a link tag with attribute rel=icon most often.",
       nullable: true,
     },
+    domain: {
+      type: SchemaType.STRING,
+      description:
+        "Website domain associated with the company posting the job. Often www.company.com, or company.com or company.io etc",
+    },
     description: {
       type: SchemaType.STRING,
       description:
@@ -87,7 +93,10 @@ export const prefillJob = async (job: string): Promise<Prompt[]> => {
       "Successfully extracted the following data from the posting:",
       extractedData
     );
-    const foundFavicon = await getFavicon(extractedData.company);
+    const foundFavicon = await getFavicon(
+      extractedData.company,
+      extractedData.domain
+    );
     const prompts: Prompt[] = [];
     prompts.push({
       question: "Enter Company name:",
