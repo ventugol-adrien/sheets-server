@@ -1,7 +1,8 @@
 import * as mongo from "mongodb";
 import { configDotenv } from "dotenv";
 import { IdJob, Job, castToJob } from "../types.js";
-import { jobSchema } from "./addJob.js";
+import { newJobSchema } from "./addJob.js";
+import { z } from "zod";
 configDotenv();
 
 const uri = `mongodb+srv://admin:${process.env.MONGODB_PWD}@cluster0.akpza.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0`;
@@ -15,7 +16,6 @@ const client = new mongo.MongoClient(uri, {
   },
 });
 const [dbName, collectionName] = ["interactive-resume", "jobs"];
-
 const database = client.db(dbName);
 export const collection = database.collection(collectionName);
 
@@ -55,7 +55,7 @@ export async function getFavicon(
       }
       return "";
     } else {
-      const job = jobSchema.parse(findOneResult);
+      const job = newJobSchema.parse(findOneResult);
       console.log("Here is the favicon we've found:", job?.favicon);
       return job?.favicon ?? "";
     }
@@ -72,3 +72,29 @@ export async function putJob(job: IdJob): Promise<mongo.InsertOneResult> {
   const result = await collection.insertOne(job);
   return result;
 }
+const persistedJob = newJobSchema.extend({ id: z.string() }).nullable();
+export const findJob = async (job: Job) => {
+  try {
+    await client.connect();
+    const sameLink = persistedJob.parse(
+      await collection.findOne({ link: job.link })
+    );
+    const sameData = persistedJob.parse(
+      await collection.findOne({
+        company: job.company,
+        description: job.description,
+        title: job.title,
+      })
+    );
+    if (sameLink || sameData) {
+      const foundId = sameLink?.id ?? sameData?.id;
+      console.log("This job was already entered:", foundId);
+      return `${process.env.WEB_URL}/${foundId}`;
+    }
+    return "";
+  } catch (err) {
+    console.error("error looking for matching job:", err);
+  } finally {
+    await client.close();
+  }
+};

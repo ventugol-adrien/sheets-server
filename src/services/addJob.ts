@@ -17,10 +17,10 @@ export const PromptSchema = z.object({
 });
 export type Prompt = z.infer<typeof PromptSchema>;
 
-export const jobSchema = z.object({
+export const newJobSchema = z.object({
   company: z.string().default(""),
   title: z.string().default(""),
-  link: z.string().default(""),
+  link: z.string().nullable().default(""),
   favicon: z.string().nullable().default(""),
   domain: z.string().nullable().default(""),
   description: z.string().default(""),
@@ -29,12 +29,12 @@ export const jobSchema = z.object({
 export const filledOutJob = z.object({
   company: z.string().nonempty(),
   title: z.string().nonempty(),
-  link: z.string().nonempty(),
+  link: z.string().nullable(),
   favicon: z.string().nonempty(),
   description: z.string().nonempty(),
 });
 export type FullJob = z.infer<typeof filledOutJob>;
-export type Job = z.infer<typeof jobSchema>;
+export type Job = z.infer<typeof newJobSchema>;
 
 const schema: ResponseSchema = {
   description:
@@ -88,7 +88,9 @@ export const prefillJob = async (job: string): Promise<Prompt[]> => {
         Analyze it to extract the following information: Company name, job title (without extraneous indications like all genders or m/w/d), link to favicon or link to company website, and job description.`;
     const response = await model.generateContent(myPrompt);
     console.log("Here is the response from Gemini", response.response.text());
-    const extractedData = jobSchema.parse(JSON.parse(response.response.text()));
+    const extractedData = newJobSchema.parse(
+      JSON.parse(response.response.text())
+    );
     console.log(
       "Successfully extracted the following data from the posting:",
       extractedData
@@ -121,7 +123,7 @@ export const prefillJob = async (job: string): Promise<Prompt[]> => {
     return prompts;
   }
 };
-const jobId = jobSchema.extend({ id: z.string() });
+const jobId = newJobSchema.extend({ id: z.string() });
 export type IdJob = z.infer<typeof jobId>;
 
 export const putJob = async (job: Job): Promise<string> => {
@@ -140,30 +142,9 @@ export const putJob = async (job: Job): Promise<string> => {
   console.log("here is the JobId", { id: id, ...job });
   const jobWithId = jobId.parse({ id: id, ...job });
   try {
-    return await client
-      .connect()
-      .then(async () => {
-        console.log("Connected to MongoDB to put new job", jobWithId);
-        return await collection
-          .insertOne(jobWithId)
-          .then((result) => {
-            console.log("Inserted new job", result);
-            const personalizedLink = `${process.env.WEB_URL}/${id}`;
-            console.log(
-              "New Job up and running at the following address:",
-              personalizedLink
-            );
-            return personalizedLink;
-          })
-          .catch((error) => {
-            console.error("Error inserting new job", error);
-            throw error;
-          });
-      })
-      .catch((error) => {
-        console.error("Error connecting to MongoDB", error);
-        throw error;
-      });
+    await client.connect();
+    await collection.insertOne(jobWithId);
+    return `${process.env.WEB_URL}/${id}`;
   } catch (error) {
     console.error("Error inserting new job.", error);
     throw error;

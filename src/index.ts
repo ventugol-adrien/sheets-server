@@ -2,7 +2,7 @@ import express, { Request, Response } from "express";
 import { getValuesREST, putValuesREST } from "./services/getSheets.js";
 import cors from "cors";
 import { Question } from "./types.js";
-import { getJob } from "./services/getJobs.js";
+import { findJob, getJob } from "./services/getJobs.js";
 import { configDotenv } from "dotenv";
 import { z } from "zod";
 import {
@@ -182,12 +182,22 @@ app.put(
       console.log("attempting to parse ");
       const job = filledOutJob.parse(req.body);
       console.log("Job data parsed against schema.");
-      const link = await putJob(job);
-      await putValuesREST(spreadsheetId, "Links (Dublin)!A1:B1", [
-        [job.company, link],
-      ]);
-      res.json({ message: "Job added successfully.", link: link });
+      const existingLink = await findJob(job);
+      if (existingLink !== "") {
+        res
+          .status(200)
+          .json({ message: "Job retrieved in database", link: existingLink });
+      } else {
+        const newLink = await putJob(job);
+        await putValuesREST(spreadsheetId, "Links (Dublin)!A1:B1", [
+          [job.company, newLink],
+        ]);
+        res
+          .status(201)
+          .json({ message: "Job added successfully.", link: newLink });
+      }
     } catch (error) {
+      console.error(error);
       res.status(500).json({
         error: `Failed to update some of the spreadsheet data: ${error}`,
       });
