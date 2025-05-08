@@ -37,6 +37,7 @@ app.use(
     origin: [
       process.env.WEB_URL,
       "https://adriens-resume-tailor.org",
+      "http://localhost:8080",
       "http://localhost:3000",
     ],
   })
@@ -49,6 +50,32 @@ app.get(
   async (req: Request<{}, {}, Question>, res: Response) => {
     try {
       const data = await getValuesREST(spreadsheetId, range);
+      res.json(data);
+    } catch (error) {
+      res.status(500).json({
+        error: "Failed to fetch spreadsheet data on the spreadsheet.",
+      });
+    }
+  }
+);
+
+app.post(
+  "/spreadsheet/question",
+  async (req: Request<{}, {}, Question>, res: Response) => {
+    const jobData = await (async () => {
+      if ("asker" in req.body) {
+        const job = await getJob(req.body["asker"]);
+        return [job.company, job.link, job.description];
+      } else {
+        return ["N/A", "N/A", "N/A", "N/A"];
+      }
+    })();
+    const questionData = Object.values(req.body);
+    const response = questionData.pop();
+    const row = [...questionData, ...jobData, response];
+
+    try {
+      const data = await putValuesREST(spreadsheetId, range, [row]);
       res.json(data);
     } catch (error) {
       res.status(500).json({
@@ -169,5 +196,11 @@ app.put(
 );
 
 app.listen(port, () => {
-  console.log(`Server listening at ${port}`);
+  if (process.env.NODE_ENV == "DEV") {
+  }
+  console.log(
+    `Server listening at ${
+      process.env.NODE_ENV == "DEV" ? "http://localhost:" + port : port
+    }`
+  );
 });

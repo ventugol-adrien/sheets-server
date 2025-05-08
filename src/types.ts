@@ -1,37 +1,31 @@
-import { assert } from 'console'
-import * as mongo from 'mongodb'
+import z from "zod";
+import * as mongo from "mongodb";
 export interface Question {
-    question: string,
-    time: string,
-    theme: string,
-    asker:string,
+  question: string;
+  time: string;
+  theme: string;
+  asker: string;
+  response: string;
 }
 
-export interface  Job{
-    company: string,
-    title: string,
-    description: string,
-    link?:string,
-    favicon?:string
-}
+const Job = z.object({
+  company: z.string(),
+  title: z.string(),
+  description: z.string(),
+  link: z.string().optional(),
+  favicon: z.string().optional(),
+  id: z.string(),
+});
+export type Job = z.infer<typeof Job>;
 
-export type IdJob = {id:string} & Job
+export type IdJob = { id: string } & Job;
 
-export const castToJob = (dbResponse:mongo.WithId<mongo.BSON.Document> | null):Job => {
-    if (dbResponse){
-        assert(typeof dbResponse.company === "string" 
-            && typeof dbResponse.title === "string" 
-            && typeof dbResponse.description === "string"
-            && typeof dbResponse.link === "string"
-            && typeof dbResponse.favicon === "string")
-            return {company:dbResponse.company,
-                 title: dbResponse.title,
-                  description: dbResponse.description,
-                   link: dbResponse.link,
-                favicon:dbResponse.favicon
-            }
-
-    } else {
-        throw TypeError("dbResponse is null or undefined.")
-    }
-}
+export const castToJob = (
+  dbResponse: mongo.WithId<mongo.BSON.Document> | null
+): Job => {
+  try {
+    return Job.parse(dbResponse);
+  } catch (e) {
+    console.error("Error parsing database response to Job: " + e);
+  }
+};
