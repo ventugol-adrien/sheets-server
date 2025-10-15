@@ -10,8 +10,8 @@
     "newId": "npx uuid v4",
     "test": "test",
     "compile": "tsc -b",
-    "deploy": "docker build -t server . && docker tag server ventugoladrien/interactive-resume:version6 && docker push ventugoladrien/interactive-resume:version6 && gcloud config configurations activate sheets-server && gcloud run deploy sheets-server2 --image docker.io/ventugoladrien/interactive-resume:version6",
-    "redeploy": "docker build --no-cache -t server . && docker tag server ventugoladrien/interactive-resume:server && docker push ventugoladrien/interactive-resume:server && gcloud run deploy sheets-server2 --image docker.io/ventugoladrien/interactive-resume:server",
+    "deploy": "docker build -t ventugoladrien/sheets-server:version9 . && docker push ventugoladrien/sheets-server:version9 && gcloud config configurations activate sheets-server && gcloud run deploy sheets-server2 --image docker.io/ventugoladrien/sheets-server:version9",
+    "redeploy": "docker build --no-cache -t server . && docker tag server ventugoladrien/sheets-server:server && docker push ventugoladrien/sheets-server:server && gcloud run deploy sheets-server2 --image docker.io/ventugoladrien/interactive-resume:server",
     "start": "node ./dist/index.js",
     "dev": "set NODE_ENV=DEV&& set PORT=54337&& npm start",
     "restart": "tsc -b && npm run dev"
@@ -19,6 +19,7 @@
   "dependencies": {
     "@google/generative-ai": "^0.22.0",
     "@types/gapi": "^0.0.47",
+    "axios": "^1.12.2",
     "body-parser": "^2.2.0",
     "cors": "^2.8.5",
     "dotenv": "^16.4.7",
@@ -28,7 +29,7 @@
     "mongodb": "^6.13.1",
     "typescript": "^5.7.3",
     "uuid": "^11.1.0",
-    "zod": "^3.24.2"
+    "zod": "^4.1.12"
   },
   "devDependencies": {
     "@types/cors": "^2.8.17",
