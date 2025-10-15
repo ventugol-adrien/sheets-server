@@ -1,9 +1,9 @@
 import express, { Request, Response } from "express";
 import { putValuesREST } from "./services/sheets.js";
 import cors from "cors";
-import { Job, Prompt, Question } from "./types.js";
+import { JobInput, Question } from "./types.js";
 import { configDotenv } from "dotenv";
-import { createInputs, generateJob, getJob } from "./services/jobs.js";
+import { generateJob, getJob } from "./services/jobs.js";
 import { sheets_v4 } from "googleapis";
 configDotenv();
 const app = express();
@@ -24,20 +24,19 @@ app.use(express.json());
 
 // Goal: Take a job description and use AI to extract relevant data
 app.post(
-  "/spreadsheet/job",
+  "/spreadsheet/jobs",
   async (
     req: Request<{}, {}, { jobDescription: string }>,
-    res: Response<Prompt[]>
+    res: Response<JobInput>
   ) => {
     const { jobDescription } = req.body;
     const generatedJob = await generateJob(jobDescription);
-    const inputPrompts = await createInputs(generatedJob);
-    res.status(201).json(inputPrompts);
+    res.status(201).json(generatedJob);
   }
 );
 
 app.put(
-  "/spreadsheet/job",
+  "/spreadsheet/jobs",
   async (
     req: Request<{}, {}, { jobId: string }>,
     res: Response<sheets_v4.Schema$AppendValuesResponse>
@@ -55,7 +54,7 @@ app.put(
 app.post(
   "/spreadsheet/question",
   async (req: Request<{}, {}, Question>, res: Response) => {
-    const { asker, response, ...questionData } = req.body;
+    const { asker, response, question, time, theme } = req.body;
     const range = "Qs!A1:C2";
 
     const job = asker ? await getJob(asker) : undefined;
@@ -63,7 +62,7 @@ app.post(
       ? [job.company, job.link, job.description]
       : ["N/A", "N/A", "N/A", "N/A"];
 
-    const row = [...Object.values(questionData), ...jobData, response];
+    const row = [question, time, theme, asker, ...jobData, response];
 
     try {
       const data = await putValuesREST(spreadsheetId, range, [row]);

@@ -25,10 +25,10 @@ export const KeywordsSchema = z.object({
 export type Keywords = z.infer<typeof KeywordsSchema>;
 
 export const JobInputSchema = z.object({
-  company: z.string(),
+  company: z.optional(z.string()),
   favicon: z.optional(z.url()).nullable(),
-  title: z.string(),
-  description: z.string(),
+  title: z.optional(z.string()),
+  description: z.optional(z.string()),
   domain: z.optional(z.string()),
 });
 

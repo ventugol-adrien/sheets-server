@@ -26,8 +26,7 @@ sheets-server/
 ├── .github/ # GitHub configuration (e.g., workflows)
 ├── src/ # Source code
 │ ├── services/ # Service modules
-│ │ ├── getJobs.ts # Job retrieval logic (legacy functions)
-│ │ ├── jobs.ts # AI-powered job generation and processing
+│ │ ├── jobs.ts # AI-powered job generation, processing, and favicon retrieval
 │ │ └── sheets.ts # Google Sheets API interaction
 │ ├── types.ts # TypeScript type definitions and Zod schemas
 │ └── index.ts # Main application entry point
@@ -56,7 +55,7 @@ The following scripts are defined in the `package.json` file:
 
 The server exposes the following API endpoints:
 
-- **`POST /spreadsheet/job`**: Processes a job description using AI to extract relevant information.
+- **`POST /spreadsheet/jobs`**: Processes a job description using AI to extract relevant information.
 
   - **Request Body:** JSON object containing the job description.
     ```json
@@ -64,10 +63,10 @@ The server exposes the following API endpoints:
       "jobDescription": "Full job posting text here..."
     }
     ```
-  - **Response:** Array of prompt objects for user input validation.
-  - **Example:** Creates interactive prompts for company name, job title, etc.
+  - **Response:** JobInput object with extracted company, title, description, domain, and favicon.
+  - **Example:** Returns a structured job object with AI-extracted data ready for review.
 
-- **`PUT /spreadsheet/job`**: Adds a processed job to the spreadsheet with a generated link.
+- **`PUT /spreadsheet/jobs`**: Adds a processed job to the spreadsheet with a generated link.
 
   - **Request Body:** JSON object containing the job ID.
     ```json
@@ -193,8 +192,13 @@ This project is licensed under the MIT License - see the `LICENSE` file for deta
 
 ## Recent Updates
 
+- **Simplified Job Processing API**: Reworked AI job completion to return JobInput objects directly instead of prompt arrays
+- **Consolidated Services**: Removed `getJobs.ts` and moved favicon retrieval functionality into `jobs.ts`
+- **Enhanced Favicon Handling**: Improved favicon retrieval with fallback to Google's favicon service and existing job database lookup
+- **Updated API Endpoints**: Changed endpoint paths from `/spreadsheet/job` to `/spreadsheet/jobs` for better REST conventions
+- **Improved Type Safety**: Made JobInput schema fields optional for more flexible AI extraction
+- **Streamlined Question Logging**: Simplified question data handling in the spreadsheet endpoint
 - **AI-Powered Job Processing**: Added integration with Google's Gemini AI to automatically extract job information from job descriptions
-- **Streamlined API**: Simplified API endpoints focused on job processing and question logging
 - **Docker Deployment**: Migrated from direct gcloud deployment to Docker-based deployment
 - **Enhanced Type Safety**: Updated to Zod v4 for improved schema validation
 - **Axios Integration**: Added axios for external API communication

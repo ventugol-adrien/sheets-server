@@ -4,8 +4,7 @@ import {
   ResponseSchema,
   SchemaType,
 } from "@google/generative-ai";
-import { getFavicon } from "./getJobs.js";
-import { Job, JobInput, JobInputSchema, Prompt } from "../types.js";
+import { Job, JobInput, JobInputSchema } from "../types.js";
 import axios from "axios";
 configDotenv();
 
@@ -59,6 +58,32 @@ const schema: ResponseSchema = {
   },
 };
 
+export async function getFavicon(
+  company?: string,
+  domain?: string | undefined
+): Promise<string> {
+  if (company === "" || !company) {
+    console.log("No company name provided, returning empty string.");
+    return "";
+  } else if (domain && domain !== "") {
+    return `https://www.google.com/s2/favicons?domain=${domain}&sz=48`;
+  } else {
+    try {
+      const jobs = await getJobs({
+        company: company,
+        favicon: { $exists: true },
+      });
+      return jobs[0].favicon;
+    } catch (e) {
+      console.error(
+        "Error attempting to fetch jobs from same company for the favicon:\n" +
+          JSON.stringify(e)
+      );
+    }
+  }
+  return "";
+}
+
 export const generateJob = async (
   jobDescription: string
 ): Promise<JobInput> => {
@@ -83,37 +108,11 @@ export const generateJob = async (
     );
     const { response } = generatedContent;
     const job = JobInputSchema.parse(JSON.parse(response.text()));
+    job.favicon = await getFavicon(job.company, job.domain);
     console.log(
       "Successfully extracted the following data from the posting:",
       JSON.stringify(job)
     );
     return job;
   }
-};
-
-export const createInputs = async (job: JobInput): Promise<Prompt[]> => {
-  const { company, domain, title, description } = job;
-  const favicon = await getFavicon(company, domain);
-  const prompts: Prompt[] = [];
-  prompts.push({
-    question: "Company name:",
-    default: company,
-  });
-  prompts.push({
-    question: "Job title:",
-    default: title,
-  });
-  prompts.push({
-    question: "Job link:",
-    default: "",
-  });
-  prompts.push({
-    question: "Favicon link:",
-    default: favicon,
-  });
-  prompts.push({
-    question: "Job description:",
-    default: description,
-  });
-  return prompts;
 };
