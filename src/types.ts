@@ -15,9 +15,29 @@ export const AnsweredQuestionSchema = QuestionSchema.extend({
 
 export type AnsweredQuestion = z.infer<typeof AnsweredQuestionSchema>;
 
-export const AnswerSchema = z.object({
-  answer: z.string().describe("Answer to the user's question"),
+export const HighlightCardSchema = z.object({
+  title: z
+    .string()
+    .describe(
+      "Synthesizes a point/ fact relevant to the question in 2 to 3 words."
+    ),
+  content: z
+    .string()
+    .describe("Individual point / fact relevant to the question asked."),
 });
+export const AnswerSchema = z.object({
+  answer: z.string().describe("Answer to the user's question/ follow up"),
+  highlightCards: z.optional(
+    z
+      .array(HighlightCardSchema)
+      .describe(
+        "Array of titles and contents describing facts of points relevant to the question."
+      )
+      .max(4)
+  ),
+});
+
+export type Answer = z.infer<typeof AnswerSchema>;
 export const OriginsSchema = z.array(z.url());
 export type Origins = z.infer<typeof OriginsSchema>;
 

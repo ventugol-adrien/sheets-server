@@ -1,4 +1,4 @@
-import { Chat } from "@google/genai";
+import { Chat, GenerateContentConfig } from "@google/genai";
 import { AnswerSchema, Resume, ThemeAnalysisSchema } from "../types.js";
 import {
   createModel,
@@ -8,6 +8,7 @@ import {
   getLastAnswer,
 } from "../utils/model.js";
 import { Feedback } from "../assets/Feedback.js";
+import z from "zod";
 
 export const inferTheme = async (target: string, chat?: Chat) => {
   const { models: themeAnalyzer } = createModel();
@@ -74,11 +75,15 @@ export const askQuestion = async (
     undefined,
     undefined,
     AnswerSchema,
-    "text/plain"
+    "application/json"
+  );
+  const structuredConfig: GenerateContentConfig = { ...questionConfig };
+  structuredConfig.responseJsonSchema = z.toJSONSchema(
+    questionConfig.responseJsonSchema
   );
   const { text: response } = await chat.sendMessage({
     message: prompt,
-    config: questionConfig,
+    config: structuredConfig,
   });
-  return response;
+  return AnswerSchema.parse(JSON.parse(response));
 };

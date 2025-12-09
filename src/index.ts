@@ -66,7 +66,7 @@ app.post(
       );
       const jobData = [company, link, description];
 
-      row = [question, time, theme, asker, ...jobData, response];
+      row = [question, time, theme, asker, ...jobData, response.answer];
       res.status(201).json(response);
     } catch (error: any) {
       console.error("Error Answering question: " + JSON.stringify(error));
