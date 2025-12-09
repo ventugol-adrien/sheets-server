@@ -2,3 +2,5 @@
 node_modules
 dist
 .vscode/settings.json
+.vscode/launch.json
+deploy.ps1

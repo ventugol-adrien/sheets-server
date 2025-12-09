@@ -3,7 +3,8 @@
         "target": "ESNext",
         "module": "NodeNext",
         "moduleResolution": "nodenext",
-        "outDir": "./dist"
+        "outDir": "./dist",
+        "skipLibCheck": true
     },
     "include": ["src/**/*.ts"],
     "exclude": ["node_modules"]

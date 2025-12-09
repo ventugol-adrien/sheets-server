@@ -10,13 +10,14 @@
     "newId": "npx uuid v4",
     "test": "test",
     "compile": "tsc -b",
-    "deploy": "docker build -t ventugoladrien/sheets-server:version10 . && docker push ventugoladrien/sheets-server:version10 && gcloud config configurations activate sheets-server && gcloud run deploy sheets-server2 --image docker.io/ventugoladrien/sheets-server:version10",
+    "deploy": "powershell -ExecutionPolicy Bypass -File deploy.ps1",
     "redeploy": "docker build --no-cache -t server . && docker tag server ventugoladrien/sheets-server:server && docker push ventugoladrien/sheets-server:server && gcloud run deploy sheets-server2 --image docker.io/ventugoladrien/interactive-resume:server",
     "start": "node ./dist/index.js",
     "dev": "set NODE_ENV=DEV&& set PORT=54337&& npm start",
     "restart": "tsc -b && npm run dev"
   },
   "dependencies": {
+    "@google/genai": "^1.31.0",
     "@google/generative-ai": "^0.22.0",
     "@types/gapi": "^0.0.47",
     "axios": "^1.12.2",
@@ -29,7 +30,8 @@
     "mongodb": "^6.13.1",
     "typescript": "^5.7.3",
     "uuid": "^11.1.0",
-    "zod": "^4.1.12"
+    "zod": "^4.1.12",
+    "zod-to-json-schema": "^3.25.0"
   },
   "devDependencies": {
     "@types/cors": "^2.8.17",
