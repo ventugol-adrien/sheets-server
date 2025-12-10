@@ -38,7 +38,7 @@ export const createConfig = <T extends ZodType>(
   return config;
 };
 let aiClient: GoogleGenAI | null = null;
-export const createModel = () => {
+export const createModel = async () => {
   if (process.env.GEMINI_API_KEY) {
     if (aiClient) {
       return aiClient;
@@ -46,6 +46,18 @@ export const createModel = () => {
     const newModel = new GoogleGenAI({
       apiKey: process.env.GEMINI_API_KEY,
     });
+    try {
+      await newModel.models.generateContent({
+        model: "gemini-2.5-flash-lite",
+        contents: [{ role: "user", parts: [{ text: "Test" }] }],
+      });
+    } catch (e) {
+      console.error("API Key verification failed:", e);
+      throw new ApiError({
+        status: 401,
+        message: "Invalid API Key or API Error",
+      });
+    }
     aiClient = newModel;
     return aiClient;
   } else {
@@ -54,8 +66,8 @@ export const createModel = () => {
 };
 
 let aiChat: Chat | null = null;
-export const startChat = () => {
-  const client = createModel();
+export const startChat = async () => {
+  const client = await createModel();
   if (aiChat) {
     return aiChat;
   } else {
@@ -65,8 +77,8 @@ export const startChat = () => {
   }
 };
 
-export const getLastAnswer = () => {
-  const chat = startChat();
+export const getLastAnswer = async () => {
+  const chat = await startChat();
   try {
     const lastAnswer = chat
       .getHistory(true)

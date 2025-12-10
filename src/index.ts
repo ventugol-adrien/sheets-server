@@ -54,7 +54,7 @@ app.post(
       const [job, resume, { theme }] = await Promise.all([
         getJob(asker),
         getLinkedResume(asker),
-        inferTheme(question, startChat()),
+        inferTheme(question, await startChat()),
       ]);
       const { title, company, link, description } = job;
       const response = await askQuestion(
@@ -72,9 +72,10 @@ app.post(
       console.error("Error Answering question: " + JSON.stringify(error));
       res
         .status(error.status)
-        .json(
-          "Sorry, I couldn't quite answer that, please ask again at a later time."
-        );
+        .json({
+          answer:
+            "Sorry, I couldn't quite answer that, please ask again at a later time.",
+        });
     }
     try {
       const range = "Qs!A1:C2";

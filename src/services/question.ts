@@ -1,4 +1,4 @@
-import { Chat, GenerateContentConfig } from "@google/genai";
+import { ApiError, Chat, GenerateContentConfig } from "@google/genai";
 import { AnswerSchema, Resume, ThemeAnalysisSchema } from "../types.js";
 import {
   createModel,
@@ -11,9 +11,10 @@ import { Feedback } from "../assets/Feedback.js";
 import z from "zod";
 
 export const inferTheme = async (target: string, chat?: Chat) => {
-  const { models: themeAnalyzer } = createModel();
+  const { models: themeAnalyzer } = await createModel();
+  const lastAnswer = chat ? await getLastAnswer() : "";
   const myPrompt = ` a user is asking the following question/follow ups about the engineer:${target}
-${chat ? "Taking into account your last interaction: " + getLastAnswer() : ""}
+${chat ? "Taking into account your last interaction: " + lastAnswer : ""}
               Give the theme of the question.
               Example: "What is the engineer's experience with React?" ->"Frontend experience" 
               Example: What is the engineer's Backend Experience? ->"Backend Experience" 
@@ -31,13 +32,19 @@ ${chat ? "Taking into account your last interaction: " + getLastAnswer() : ""}
     ThemeAnalysisSchema,
     "application/json"
   );
-  const {
-    candidates,
-    data,
-    text,
-    parsed: theme,
-  } = await inferContent(themeAnalyzer, undefined, config, contents);
-  return theme;
+  try {
+    const {
+      candidates,
+      data,
+      text,
+      parsed: theme,
+    } = await inferContent(themeAnalyzer, undefined, config, contents);
+    return theme;
+  } catch (err) {
+    const error = "Error inferring theme: " + JSON.stringify(err);
+    console.error(error);
+    throw new ApiError({ message: error, status: err.status });
+  }
 };
 
 export const askQuestion = async (
@@ -47,7 +54,7 @@ export const askQuestion = async (
   description?: string,
   resume?: Resume
 ) => {
-  const chat = startChat();
+  const chat = await startChat();
   const instructions = `You are an assistant tasked with getting the software engineer mentioned (the applicant) in the feedback hired into the following position:
                  ${
                    jobTitle ? jobTitle : "Mid to Senior Fullstack Engineer"
