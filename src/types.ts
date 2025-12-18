@@ -1,5 +1,6 @@
-import z from "zod";
+import z, { output } from "zod";
 import { makeTool } from "./utils/tools.js";
+import { Interactions } from "@google/genai";
 
 export const QuestionSchema = z.object({
   question: z.string(),
@@ -261,3 +262,10 @@ export const ResumeDocumentSchema = ResumeMetadataSchema.extend(
   ResumeSchema.shape
 );
 export type ResumeDocument = z.infer<typeof ResumeDocumentSchema>;
+
+export const isOutputTextContent = (
+  output: any
+): output is Interactions.TextContent => {
+  4;
+  return "text" in output;
+};

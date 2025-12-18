@@ -11,8 +11,11 @@ import {
   Models,
   ApiError,
   Part,
+  Interactions,
 } from "@google/genai";
 import z, { ZodType } from "zod";
+import { readFileSync, writeFileSync } from "fs";
+import { isOutputTextContent } from "../types.js";
 export interface ValidatingConfig<T extends ZodType = ZodType>
   extends Omit<GenerateContentConfig, "responseJsonSchema"> {
   responseJsonSchema: T;
@@ -38,7 +41,7 @@ export const createConfig = <T extends ZodType>(
   return config;
 };
 let aiClient: GoogleGenAI | null = null;
-export const createModel = async () => {
+export const getModel = async () => {
   if (process.env.GEMINI_API_KEY) {
     if (aiClient) {
       return aiClient;
@@ -65,9 +68,45 @@ export const createModel = async () => {
   }
 };
 
+const postInteraction = async (
+  ...parms: Parameters<Interactions["create"]>
+): Promise<ReturnType<Interactions["create"]>> => {
+  const interaction = (await getModel()).interactions.create(...parms);
+  return interaction;
+};
+
+export const postResearch = async (topic: string, title: string) => {
+  const model = await getModel();
+  const initialInteraction = await model.interactions.create({
+    input: topic + "\nFormat your research report using markdown.",
+    agent: "deep-research-pro-preview-12-2025",
+    background: true,
+  });
+  while (true) {
+    const interaction = await model.interactions.get(initialInteraction.id);
+    console.log(`Status: ${interaction.status}`);
+
+    if (interaction.status === "completed") {
+      const output = interaction.outputs[interaction.outputs.length - 1];
+      if (isOutputTextContent(output)) {
+        const filePath = `${title}.md`;
+        writeFileSync(filePath, output.text);
+        return filePath;
+      }
+
+      break;
+    } else if (["failed", "cancelled"].includes(interaction.status)) {
+      console.log(`Failed with status: ${interaction.status}`);
+      break;
+    }
+
+    await new Promise((resolve) => setTimeout(resolve, 10000));
+  }
+};
+
 let aiChat: Chat | null = null;
 export const startChat = async () => {
-  const client = await createModel();
+  const client = await getModel();
   if (aiChat) {
     return aiChat;
   } else {

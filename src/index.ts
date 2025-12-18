@@ -1,16 +1,18 @@
 import express, { Request, Response } from "express";
-import { putValuesREST } from "./services/sheets.js";
+import { createResearchDoc, putValuesREST } from "./services/sheets.js";
+import { unlinkSync } from "fs";
 import cors from "cors";
 import { Job, JobInput, OriginsSchema, Question } from "./types.js";
 import { configDotenv } from "dotenv";
 import { generateJob, getJob, getLinkedResume } from "./services/jobs.js";
 import { askQuestion, inferTheme } from "./services/question.js";
-import { startChat } from "./utils/model.js";
+import { postResearch, startChat } from "./utils/model.js";
+import { logResearchEnd, logResearchStart } from "./utils/log.js";
 configDotenv();
 const app = express();
 const port = process.env.PORT;
 
-const spreadsheetId = "122LIKJ4G8KSomRhotHoRuOGK5ep0-V5tm0OEoM5Kv9w";
+const spreadsheetId = process.env.SHEET_ID;
 const allowedOrigins = OriginsSchema.parse(JSON.parse(process.env.WEB_URL));
 app.use(
   cors({
@@ -70,12 +72,10 @@ app.post(
       res.status(201).json(response);
     } catch (error: any) {
       console.error("Error Answering question: " + JSON.stringify(error));
-      res
-        .status(error.status)
-        .json({
-          answer:
-            "Sorry, I couldn't quite answer that, please ask again at a later time.",
-        });
+      res.status(error.status).json({
+        answer:
+          "Sorry, I couldn't quite answer that, please ask again at a later time.",
+      });
     }
     try {
       const range = "Qs!A1:C2";
@@ -86,6 +86,31 @@ app.post(
         "Error putting values in the sheet: " + JSON.stringify(error)
       );
       return;
+    }
+  }
+);
+
+app.post(
+  "/spreadsheet/research/",
+  async (
+    req: Request<{}, {}, { topic: string; title: string }>,
+    res: Response
+  ) => {
+    try {
+      const { topic, title } = req.body;
+      const id = logResearchStart("./logs/log.log");
+      const filePath = await postResearch(topic, title);
+      if (filePath) {
+        await createResearchDoc(title, filePath);
+        unlinkSync(filePath);
+        res.json("Research uploaded.");
+        logResearchEnd("../logs/log.log", id);
+      } else {
+        throw new Error("Research failed to generate output.");
+      }
+    } catch (err) {
+      console.error("Error researching the following topic:", err);
+      res.status(500).json("Sorry, unable to research this topic.");
     }
   }
 );

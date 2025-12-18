@@ -1,7 +1,7 @@
 import { ApiError, Chat, GenerateContentConfig } from "@google/genai";
 import { AnswerSchema, Resume, ThemeAnalysisSchema } from "../types.js";
 import {
-  createModel,
+  getModel,
   createConfig,
   inferContent,
   startChat,
@@ -11,7 +11,7 @@ import { Feedback } from "../assets/Feedback.js";
 import z from "zod";
 
 export const inferTheme = async (target: string, chat?: Chat) => {
-  const { models: themeAnalyzer } = await createModel();
+  const { models: themeAnalyzer } = await getModel();
   const lastAnswer = chat ? await getLastAnswer() : "";
   const myPrompt = ` a user is asking the following question/follow ups about the engineer:${target}
 ${chat ? "Taking into account your last interaction: " + lastAnswer : ""}

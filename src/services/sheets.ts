@@ -1,6 +1,7 @@
 import { google } from "googleapis";
-import { JWT } from "google-auth-library";
+import { JWT, OAuth2Client } from "google-auth-library";
 import { configDotenv } from "dotenv";
+import { createReadStream } from "fs";
 configDotenv();
 
 let auth: JWT | null = null;
@@ -21,7 +22,10 @@ const getAuth = async () => {
           /\\n/g,
           "\n"
         ),
-        scopes: ["https://www.googleapis.com/auth/spreadsheets"],
+        scopes: [
+          "https://www.googleapis.com/auth/spreadsheets",
+          "https://www.googleapis.com/auth/drive",
+        ],
       });
       try {
         auth = token;
@@ -37,6 +41,33 @@ const getAuth = async () => {
         );
       }
     }
+  }
+};
+
+let oauth2: OAuth2Client | null;
+const getOauth2 = () => {
+  if (
+    process.env.REFRESH_TOKEN &&
+    process.env.CLIENT_ID &&
+    process.env.CLIENT_SECRET
+  ) {
+    if (oauth2) {
+      return oauth2;
+    }
+    try {
+      const client = new google.auth.OAuth2(
+        process.env.CLIENT_ID,
+        process.env.CLIENT_SECRET
+      );
+      client.setCredentials({ refresh_token: process.env.REFRESH_TOKEN });
+      oauth2 = client;
+      return oauth2;
+    } catch (error) {
+      console.error("Error initializing Drive client");
+      throw new Error("Error initializing Drive client");
+    }
+  } else {
+    throw new Error("Missing ENV");
   }
 };
 
@@ -59,6 +90,28 @@ export async function putValuesREST(
     console.error(
       "Error appending values to spreadsheet: " + JSON.stringify(err)
     );
+    throw err;
+  }
+}
+
+export async function createResearchDoc(title: string, filePath: string) {
+  try {
+    const driveService = google.drive({ version: "v3", auth: getOauth2() });
+    const file_metadata = {
+      name: title,
+      mimeType: "application/vnd.google-apps.document",
+      parents: [process.env.PERSONAL_FOLDER_ID],
+    };
+    const response = await driveService.files.create({
+      requestBody: file_metadata,
+      media: {
+        mimeType: "text/markdown",
+        body: createReadStream(filePath),
+      },
+    });
+    return response;
+  } catch (err) {
+    console.error("Error uploading file to drive: " + JSON.stringify(err));
     throw err;
   }
 }

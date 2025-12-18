@@ -17,7 +17,7 @@
     "restart": "tsc -b && npm run dev"
   },
   "dependencies": {
-    "@google/genai": "^1.31.0",
+    "@google/genai": "^1.33.0",
     "@google/generative-ai": "^0.22.0",
     "@types/gapi": "^0.0.47",
     "axios": "^1.12.2",

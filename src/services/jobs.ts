@@ -1,7 +1,7 @@
 import { Job, JobInput, JobInputSchema, ResumeDocument } from "../types.js";
 import axios, { AxiosError } from "axios";
 import { IncomingHttpHeaders } from "http2";
-import { createConfig, createModel, inferContent } from "../utils/model.js";
+import { createConfig, getModel, inferContent } from "../utils/model.js";
 
 export const getJob = async (jobId: string): Promise<Job> => {
   try {
@@ -80,7 +80,7 @@ export const generateJob = async (
   headers: IncomingHttpHeaders,
   jobDescription: string
 ): Promise<JobInput> => {
-  const { models: jobExtractor } = await createModel();
+  const { models: jobExtractor } = await getModel();
   const myPrompt = `Here is a job posting: ${jobDescription}
         Analyze it to extract the following information: Company name, job title (without extraneous indications like all genders or m/w/d), link to favicon or link to company website, and job description.`;
   const contents = [{ role: "user", parts: [{ text: myPrompt }] }];
