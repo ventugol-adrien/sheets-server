@@ -5,3 +5,4 @@ dist
 .vscode/launch.json
 deploy.ps1
 /logs
+service.yaml

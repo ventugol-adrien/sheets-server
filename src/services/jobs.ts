@@ -89,10 +89,8 @@ export const generateJob = async (
   const config = createConfig(
     0,
     instructions,
-    undefined,
-    undefined,
-    JobInputSchema,
-    "application/json"
+    "application/json",
+    JobInputSchema
   );
   const {
     candidates,

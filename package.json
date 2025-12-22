@@ -25,6 +25,7 @@
     "cors": "^2.8.5",
     "dotenv": "^16.4.7",
     "express": "^4.21.2",
+    "geoip-lite": "^1.4.10",
     "google-auth-library": "^9.15.1",
     "googleapis": "^144.0.0",
     "mongodb": "^6.13.1",
@@ -36,6 +37,7 @@
   "devDependencies": {
     "@types/cors": "^2.8.17",
     "@types/express": "^5.0.0",
+    "@types/geoip-lite": "^1.4.4",
     "@types/node": "^22.13.1",
     "eslint": "^9.20.1"
   }

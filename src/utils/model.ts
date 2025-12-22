@@ -1,5 +1,6 @@
 import {
   Chat,
+  Chats,
   Content,
   GenerateContentResponse,
   GoogleGenAI,
@@ -13,20 +14,20 @@ import {
   Part,
   Interactions,
 } from "@google/genai";
-import z, { ZodType } from "zod";
-import { readFileSync, writeFileSync } from "fs";
+import z, { ZodString, ZodType } from "zod";
+import { writeFileSync } from "fs";
 import { isOutputTextContent } from "../types.js";
-export interface ValidatingConfig<T extends ZodType = ZodType>
+export interface ValidatingConfig<T extends ZodType = ZodString>
   extends Omit<GenerateContentConfig, "responseJsonSchema"> {
   responseJsonSchema: T;
 }
 export const createConfig = <T extends ZodType>(
   temperature: number = 0,
   systemInstruction: string,
+  responseMimeType: string = "text/plain",
+  responseJsonSchema?: T,
   builtInTools: CallableTool[] = [],
-  functionDeclarations: FunctionDeclaration[] = [],
-  responseJsonSchema: T,
-  responseMimeType?: string
+  functionDeclarations: FunctionDeclaration[] = []
 ): ValidatingConfig<T> => {
   const config: ValidatingConfig<T> = {
     systemInstruction: systemInstruction,
@@ -103,21 +104,36 @@ export const postResearch = async (topic: string, title: string) => {
     await new Promise((resolve) => setTimeout(resolve, 10000));
   }
 };
-
-let aiChat: Chat | null = null;
-export const startChat = async () => {
+type ChatModel = Parameters<Chats["create"]>[0]["model"];
+interface AIChat {
+  chat: Chat;
+  chosenModel: ChatModel;
+}
+let aiChat: AIChat | null = null;
+export const startChat = async (model?: string) => {
   const client = await getModel();
   if (aiChat) {
+    const { chosenModel } = aiChat;
+    if (model && chosenModel !== model) {
+      const newChat = client.chats.create({
+        model: model,
+        history: aiChat.chat.getHistory(),
+      });
+      const newAIChat = { chosenModel: model, chat: newChat };
+      aiChat = newAIChat;
+    }
     return aiChat;
   } else {
-    const newChat = client.chats.create({ model: "gemini-2.5-flash-lite" });
-    aiChat = newChat;
+    const chosenModel = model ?? "gemini-2.5-flash-lite";
+    const newChat = client.chats.create({ model: chosenModel });
+    const newAIChat = { chosenModel: chosenModel, chat: newChat };
+    aiChat = newAIChat;
     return aiChat;
   }
 };
 
 export const getLastAnswer = async () => {
-  const chat = await startChat();
+  const { chat } = await startChat();
   try {
     const lastAnswer = chat
       .getHistory(true)
@@ -148,15 +164,19 @@ interface ValidatingContent<T>
     GenerateContentResponse,
     "functionCalls" | "executableCode" | "codeExecutionResult"
   > {
-  parsed: T;
+  parsed?: T;
 }
-export const inferContent = async <T extends ZodType>(
+export const inferContent = async <T extends ZodType = ZodString>(
   model: Models,
-  LLM: "gemini-2.5-flash-lite" | undefined = "gemini-2.5-flash-lite",
+  LLM:
+    | "gemini-2.5-flash-lite"
+    | "gemini-2.5-flash"
+    | "gemini-2.5-pro"
+    | undefined = "gemini-2.5-flash-lite",
   config: ValidatingConfig<T>,
   content: Content[],
   functionMap?: Record<string, ToolFunctionArgs>
-): Promise<ValidatingContent<z.infer<T>>> => {
+) => {
   const functionCallingConfig = (): GenerateContentConfig => {
     const { responseJsonSchema, responseMimeType, ...newConfig } = {
       ...config,
@@ -209,12 +229,20 @@ export const inferContent = async <T extends ZodType>(
       contents: content,
       config: config,
     });
-    const parsed = config.responseJsonSchema.parse(JSON.parse(text));
-    return { candidates: finalCandidates, data, text, parsed };
+    if (config.responseJsonSchema) {
+      const parsed = config.responseJsonSchema.parse(JSON.parse(text));
+      return { candidates: finalCandidates, data, text, parsed };
+    } else {
+      return { candidates: finalCandidates, data, text };
+    }
   } else {
     try {
-      const parsed = config.responseJsonSchema.parse(JSON.parse(text));
-      return { candidates: candidates, data, text, parsed };
+      if (config.responseJsonSchema) {
+        const parsed = config.responseJsonSchema.parse(JSON.parse(text));
+        return { candidates: candidates, data, text, parsed };
+      } else {
+        return { candidates: candidates, data, text };
+      }
     } catch (e) {
       if (e instanceof SyntaxError) {
         const parsed = config.responseJsonSchema.parse(text);
@@ -224,4 +252,41 @@ export const inferContent = async <T extends ZodType>(
       }
     }
   }
+};
+
+export const reasonStructured = async <T = string>(
+  userInput: string,
+  structure: ZodType<T>,
+  instructions?: {
+    reasoningInstructions?: string;
+    structuringInstructions?: string;
+  }
+) => {
+  const { models: reasoningModel } = await getModel();
+  const reasoning = await inferContent(
+    reasoningModel,
+    "gemini-2.5-pro",
+    createConfig(
+      0,
+      "You are the first step in a reason -> structure process. Reason about the user's query and answer to the best of your ability." +
+        instructions?.reasoningInstructions,
+      null
+    ),
+    [{ role: "user", parts: [{ text: userInput }] }]
+  );
+
+  const { text } = reasoning;
+  console.log(text);
+  const structuring = await inferContent(
+    reasoningModel,
+    "gemini-2.5-flash-lite",
+    createConfig(
+      0,
+      "You are the second step in a two step reason -> structure process. Transform the reasoning provided to you into the provided structured.",
+      "application/json" + instructions?.structuringInstructions,
+      structure
+    ),
+    [{ role: "user", parts: [{ text: text }] }]
+  );
+  return structuring;
 };

@@ -5,7 +5,7 @@ import { Interactions } from "@google/genai";
 export const QuestionSchema = z.object({
   question: z.string(),
   time: z.string(),
-  asker: z.string(),
+  asker: z.optional(z.string()),
 });
 export type Question = z.infer<typeof QuestionSchema>;
 

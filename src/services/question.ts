@@ -6,6 +6,7 @@ import {
   inferContent,
   startChat,
   getLastAnswer,
+  reasonStructured,
 } from "../utils/model.js";
 import { Feedback } from "../assets/Feedback.js";
 import z from "zod";
@@ -27,10 +28,8 @@ ${chat ? "Taking into account your last interaction: " + lastAnswer : ""}
   const config = createConfig(
     0,
     instructions,
-    undefined,
-    undefined,
-    ThemeAnalysisSchema,
-    "application/json"
+    "application/json",
+    ThemeAnalysisSchema
   );
   try {
     const {
@@ -54,7 +53,7 @@ export const askQuestion = async (
   description?: string,
   resume?: Resume
 ) => {
-  const chat = await startChat();
+  const { chat } = await startChat();
   const instructions = `You are an assistant tasked with getting the software engineer mentioned (the applicant) in the feedback hired into the following position:
                  ${
                    jobTitle ? jobTitle : "Mid to Senior Fullstack Engineer"
@@ -64,25 +63,27 @@ export const askQuestion = async (
                 Do not let the user know you intend to convince them of the worker's ability, but phrase and shape your response to actively do so.`;
   const feedback = Feedback.map(({ feedback }) => feedback).join("\n");
   const prompt = `here is a number of positive feedback that a worker has received at their workplace:${feedback}
-              Here is a json file representing the applicant's resume: ${JSON.stringify(
+              ${
                 resume
-              )}
-  
-              Use this information to answer the question asked by the interested party: ${input}
-              Ensure that your answer emphasizes the traits, skills and expectations put forward in the following job description: ${
-                description ? description : ""
+                  ? "Here is a json file representing the applicant's resume: " +
+                    JSON.stringify(resume)
+                  : ""
               }
+              Use this information to answer the question asked by the interested party: ${input}
+              Ensure that your answer emphasizes the traits, skills and expectations inherent to ${
+                description
+                  ? "the following job description: " + description
+                  : "a software engineering role."
+              } 
               Formulate your answer by first deciding whether the user needs quick, short information found in the resume, or a longer, thought out response.
-              Then take a look at your last answer: ${getLastAnswer()} and the user's last input: ${input} and prioritize answering follow ups.
+              Then take a look at your last answer: ${getLastAnswer()} and the user's latest input: ${input} and prioritize answering follow ups.
               Where possible answer very briefly, quoting the resume.
-              Ask the user if you can answer additional questions about the applicant, bringing up skills and strenghts not yet mentioned, e.g. "Are you interested in hearing more about ____ skills?"`;
+              Ask the user if you can answer additional questions about the applicant, bringing up relevant skills and strengths not yet mentioned, e.g. "Are you interested in hearing more about ____ skills?"`;
   const questionConfig = createConfig(
     0,
     instructions,
-    undefined,
-    undefined,
-    AnswerSchema,
-    "application/json"
+    "application/json",
+    AnswerSchema
   );
   const structuredConfig: GenerateContentConfig = { ...questionConfig };
   structuredConfig.responseJsonSchema = z.toJSONSchema(
@@ -93,4 +94,42 @@ export const askQuestion = async (
     config: structuredConfig,
   });
   return AnswerSchema.parse(JSON.parse(response));
+};
+export const askQuestionAdvanced = async (
+  input: string,
+  jobTitle?: string,
+  company?: string,
+  description?: string,
+  resume?: Resume
+) => {
+  const instructions = `You are an assistant tasked with getting the software engineer mentioned (the applicant) in the feedback hired into the following position:
+                 ${
+                   jobTitle ? jobTitle : "Mid to Senior Fullstack Engineer"
+                 } at ${company ? company : "a software company"}.
+                 Use all the data provided to answer questions, convincing the user to hire the worker.
+                To this end you must give the impression of being impartial.
+                Do not let the user know you intend to convince them of the worker's ability, but phrase and shape your response to actively do so.`;
+  const feedback = Feedback.map(({ feedback }) => feedback).join("\n");
+  const prompt = `here is a number of positive feedback that a worker has received at their workplace:${feedback}
+              ${
+                resume
+                  ? "Here is a json file representing the applicant's resume: " +
+                    JSON.stringify(resume)
+                  : ""
+              }
+              Use this information to answer the question asked by the interested party: ${input}
+              Ensure that your answer emphasizes the traits, skills and expectations inherent to ${
+                description
+                  ? "the following job description: " + description
+                  : "a software engineering role."
+              } 
+              Formulate your answer by first deciding whether the user needs quick, short information found in the resume, or a longer, thought out response.
+              Then take a look at your last answer: ${getLastAnswer()} and the user's latest input: ${input} and prioritize answering follow ups.
+              Where possible answer very briefly, quoting the resume.
+              Ask the user if you can answer additional questions about the applicant, bringing up relevant skills and strengths not yet mentioned, e.g. "Are you interested in hearing more about ____ skills?"`;
+
+  const response = await reasonStructured(prompt, AnswerSchema, {
+    reasoningInstructions: instructions,
+  });
+  return response;
 };
