@@ -3,17 +3,16 @@ import express, { Request, Response } from "express";
 import geoip from "geoip-lite";
 import {
   appendSheet,
-  createFolder,
-  createResearchDoc,
+  createGoogleDriveFolder,
+  uploadToGoogleDoc,
   writeSheet,
-} from "./services/sheets.js";
+} from "./services/google.js";
 import { unlinkSync } from "fs";
 import cors from "cors";
-import { Job, JobInput, OriginsSchema, Question } from "./types.js";
+import { JobInput, OriginsSchema, Question } from "./types.js";
 import { generateJob, getJob, getLinkedResume } from "./services/jobs.js";
 import { askQuestion, inferTheme } from "./services/question.js";
-import { postResearch, startChat } from "./utils/model.js";
-import { logResearchEnd, logResearchStart } from "./utils/log.js";
+import { postResearch, startChat } from "./services/model.js";
 configDotenv();
 const app = express();
 const port = process.env.PORT;
@@ -41,40 +40,57 @@ app.post(
 
 app.put(
   "/spreadsheet/jobs",
-  async (req: Request<{}, {}, { jobId: string }>, res: Response<Job>) => {
+  async (req: Request<{}, {}, { jobId: string }>, res: Response) => {
     const job = await getJob(req.body.jobId);
+
     const { company, id } = job;
     const range = "Links (Dublin)!A1:C2";
     const row = [
       [company, `https://adriens-interactive-resume.org/${id}`, "❓"],
     ];
-    await appendSheet(spreadsheetId, range, row);
-    res.status(201).json({ ...job });
-  }
-);
+    const appendJobToSheetResponse = await appendSheet(
+      spreadsheetId,
+      range,
+      row
+    );
+    res.status(201).json(appendJobToSheetResponse);
 
-app.post(
-  "/spreadsheet/research/",
-  async (
-    req: Request<{}, {}, { topic: string; title: string; folder }>,
-    res: Response
-  ) => {
-    try {
-      const { topic, title } = req.body;
-      const id = logResearchStart("./logs/log.log");
-      const filePath = await postResearch(topic, title);
-      if (filePath) {
-        await createResearchDoc(title, filePath);
-        unlinkSync(filePath);
-        res.json("Research uploaded.");
-        logResearchEnd("../logs/log.log", id);
-      } else {
-        throw new Error("Research failed to generate output.");
+    const createFolderResponse = await createGoogleDriveFolder(
+      `${job.company} Intelligence`
+    );
+    const dueDiligence: ResearchTask[] = [
+      {
+        title: `${job.company} Moment`,
+        topic: `Here is a job description: ${job.description} for a ${job.title} at ${job.company}. Deep dive into the company, and describe what moment it finds itself in, and how this job relates (if it does). Include the following: Primary business and revenue streams, Advertised core values and north stars, main competitors and business rivals, primary technology stack. Also include any information that may help an applicant pass the HR screen and hiring manager interview.`,
+      },
+      {
+        title: `${job.company} Technical Screen`,
+        topic: `Here is a job description: ${job.description} for a ${job.title} at ${job.company}. Deep dive into its hiring process, focusing on any and all technical screens employed to assess candidates for the role. Search and assemble a list of specific exercises which candidates to this role (or a closely related one) have gone through. Return a final report highlighting how a candidate may best prepare for those technical screens.`,
+      },
+    ];
+
+    const researchTasks = dueDiligence.map(
+      async ({ title, topic, folderOverride }) => {
+        //const id = logResearchStart("./logs/log.log");
+        const filePath = await postResearch(topic, title);
+        if (filePath) {
+          const createDocResponse = await uploadToGoogleDoc(
+            title,
+            filePath,
+            "text/markdown",
+            folderOverride ? folderOverride : createFolderResponse.data.id
+          );
+          unlinkSync(filePath);
+          //logResearchEnd("../logs/log.log", id);
+          console.log(`Reasearch task ${title} completed.`);
+          return createDocResponse.data.id;
+        } else {
+          throw new Error("Research failed to generate output.");
+        }
       }
-    } catch (err) {
-      console.error("Error researching the following topic:", err);
-      res.status(500).json("Sorry, unable to research this topic.");
-    }
+    );
+    await Promise.all([...researchTasks]);
+    return;
   }
 );
 
@@ -82,8 +98,6 @@ app.post(
   "/spreadsheet/question/",
   async (req: Request<{}, {}, Question>, res: Response) => {
     const ip = req.socket?.remoteAddress;
-    const loc = geoip.lookup(ip);
-    console.log(loc);
     const { asker, question, time } = req.body;
     const { chat } = await startChat();
     const referenceRange = "Qs!A1:C2";
@@ -91,7 +105,7 @@ app.post(
       new Array(8).fill(""),
     ]);
     const updateRange = appendResponse.updates.updatedRange;
-    const [rowNumber, ...othermatches] = updateRange.match(/\d+/);
+    const [rowNumber, ..._] = updateRange.match(/\d+/);
     try {
       //  we can log the question, time and asker immediately:
       await writeSheet(spreadsheetId, `Qs!A${rowNumber}:D${rowNumber}`, [
@@ -99,9 +113,8 @@ app.post(
       ]);
       if (asker && asker !== "") {
         //job id found in request, we need to fetch context (job + linked resume) before we can answer the question,
-
         //use .then to write the data to the sheet inside Promise.all
-        const [job, resume, theme] = await Promise.all([
+        const [job, resume] = await Promise.all([
           getJob(asker).then((job) => {
             //Write Job data:
             const { company, link, description } = job;
@@ -184,20 +197,23 @@ app.post(
     try {
       const { parentFolderName, tasks } = req.body;
       console.log("Received request body:", JSON.stringify(req.body, null, 2));
-      const createFolderResponse = await createFolder(parentFolderName);
+      const createFolderResponse = await createGoogleDriveFolder(
+        parentFolderName
+      );
       console.log("Folder created:", createFolderResponse.data);
       const researchTasks = tasks.map(
         async ({ title, topic, folderOverride }) => {
-          const id = logResearchStart("./logs/log.log");
+          // const id = logResearchStart("./logs/log.log");
           const filePath = await postResearch(topic, title);
           if (filePath) {
-            const createDocResponse = await createResearchDoc(
+            const createDocResponse = await uploadToGoogleDoc(
               title,
               filePath,
+              "text/markdown",
               folderOverride ? folderOverride : createFolderResponse.data.id
             );
             unlinkSync(filePath);
-            logResearchEnd("../logs/log.log", id);
+            // logResearchEnd("../logs/log.log", id);
             console.log(`Reasearch task ${title} completed.`);
             return createDocResponse.data.id;
           } else {

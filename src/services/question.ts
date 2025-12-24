@@ -7,7 +7,7 @@ import {
   startChat,
   getLastAnswer,
   reasonStructured,
-} from "../utils/model.js";
+} from "./model.js";
 import { Feedback } from "../assets/Feedback.js";
 import z from "zod";
 

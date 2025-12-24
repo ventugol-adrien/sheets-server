@@ -1,5 +1,5 @@
 import z, { output } from "zod";
-import { makeTool } from "./utils/tools.js";
+import { makeTool } from "./services/tools.js";
 import { Interactions } from "@google/genai";
 
 export const QuestionSchema = z.object({

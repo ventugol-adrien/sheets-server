@@ -1,5 +1,7 @@
 **/.env
 **/README.md
-/**.yaml
+**/dist
+**/node_modules
+/\*\*.yaml
 /.vscode
 /logs

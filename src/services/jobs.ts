@@ -1,7 +1,7 @@
 import { Job, JobInput, JobInputSchema, ResumeDocument } from "../types.js";
 import axios, { AxiosError } from "axios";
 import { IncomingHttpHeaders } from "http2";
-import { createConfig, getModel, inferContent } from "../utils/model.js";
+import { createConfig, getModel, inferContent } from "./model.js";
 
 export const getJob = async (jobId: string): Promise<Job> => {
   try {

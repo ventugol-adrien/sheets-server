@@ -1,15 +1,16 @@
 import { drive_v3, google, sheets_v4 } from "googleapis";
-import { JWT, OAuth2Client } from "google-auth-library";
+import { JWT } from "google-auth-library";
 import { configDotenv } from "dotenv";
 import { createReadStream } from "fs";
+
+//Service functions to manage google drive objects
 configDotenv();
 
 let auth: sheets_v4.Sheets | null = null;
 const getAuth = async () => {
   if (
     !process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL ||
-    !process.env.GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY ||
-    !process.env.SHEET_ID
+    !process.env.GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY
   ) {
     throw new Error("Missing environment variables for Google service account");
   } else {
@@ -66,7 +67,7 @@ const getOauth2 = () => {
       throw new Error("Error initializing Drive client");
     }
   } else {
-    throw new Error("Missing ENV");
+    throw new Error("Missing Environment variables.");
   }
 };
 
@@ -77,7 +78,6 @@ export async function appendSheet(
 ) {
   try {
     const service = await getAuth();
-    spreadsheetId = process.env.SHEET_ID;
     const { data } = await service.spreadsheets.values.append({
       spreadsheetId,
       range,
@@ -115,20 +115,22 @@ export async function writeSheet(
   }
 }
 
-export const createFolder = async (folderName: string) => {
+export const createGoogleDriveFolder = async (folderName: string) => {
   const driveService = getOauth2();
-  return await driveService.files.create({
+  const response = await driveService.files.create({
     requestBody: {
       mimeType: "application/vnd.google-apps.folder",
-      name: folderName || "Research Results",
+      name: folderName,
     },
     fields: "id, name, webViewLink",
   });
+  return response;
 };
 
-export async function createResearchDoc(
+export async function uploadToGoogleDoc(
   title: string,
   filePath: string,
+  mimeType: "text/markdown" | "application/pdf" | "text/plain" = "text/plain",
   folderID?: string
 ) {
   try {
@@ -142,7 +144,7 @@ export async function createResearchDoc(
     const response = await driveService.files.create({
       requestBody: file_metadata,
       media: {
-        mimeType: "text/markdown",
+        mimeType: mimeType,
         body: createReadStream(filePath),
       },
     });

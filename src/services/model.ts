@@ -77,6 +77,7 @@ const postInteraction = async (
 };
 
 export const postResearch = async (topic: string, title: string) => {
+  let backoff = 10000;
   const model = await getModel();
   const initialInteraction = await model.interactions.create({
     input: topic + "\nFormat your research report using markdown.",
@@ -101,7 +102,8 @@ export const postResearch = async (topic: string, title: string) => {
       break;
     }
 
-    await new Promise((resolve) => setTimeout(resolve, 10000));
+    await new Promise((resolve) => setTimeout(resolve, backoff));
+    backoff = backoff * 1.5 + Math.random() * 100;
   }
 };
 type ChatModel = Parameters<Chats["create"]>[0]["model"];

@@ -16,12 +16,12 @@ const log = (logPath: string, content: string) => {
 
 export const logResearchStart = (logPath: string) => {
   const id = new UUID();
-  const content = `[RESEARCH:${id} | ${Date.now()} START] `;
+  const content = `RESEARCH:${id} | ${Date.now()} START`;
   log(logPath, content);
   return id;
 };
 
 export const logResearchEnd = (logPath: string, id: UUID) => {
-  const content = `[RESEARCH:${id} | ${Date.now()} END] `;
+  const content = `RESEARCH:${id} | ${Date.now()} END`;
   log(logPath, content);
 };
